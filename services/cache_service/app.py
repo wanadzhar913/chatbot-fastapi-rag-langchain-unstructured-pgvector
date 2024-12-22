@@ -1,11 +1,12 @@
-from typing import List
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import redis
-import requests
 import json
 import logging
+import requests
+from typing import List
+
+import redis
+from pydantic import BaseModel
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,6 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class Message(BaseModel):
     role: str
     content: str
@@ -28,6 +30,10 @@ class Message(BaseModel):
 class Conversation(BaseModel):
     conversation: List[Message]
 
+
+@app.get("/")
+async def root():
+    return {"message": "This is the cache service's root!"}
 
 
 @app.get("/service2/{conversation_id}")
@@ -39,7 +45,6 @@ async def get_conversation(conversation_id: str):
         return existing_conversation
     else:
         return {"error": "Conversation not found"}
-
 
 
 @app.post("/service2/{conversation_id}")
