@@ -36,7 +36,7 @@ async def root():
     return {"message": "This is the cache service's root!"}
 
 
-@app.get("/service2/{conversation_id}")
+@app.get("/cache_service/{conversation_id}")
 async def get_conversation(conversation_id: str):
     logger.info(f"Retrieving initial id {conversation_id}")
     existing_conversation_json = r.get(conversation_id)
@@ -47,8 +47,8 @@ async def get_conversation(conversation_id: str):
         return {"error": "Conversation not found"}
 
 
-@app.post("/service2/{conversation_id}")
-async def service2(conversation_id: str, conversation: Conversation):
+@app.post("/cache_service/{conversation_id}")
+async def chat_with_openai(conversation_id: str, conversation: Conversation):
     logger.info(f"Sending Conversation with ID {conversation_id} to OpenAI")
     existing_conversation_json = r.get(conversation_id)
     if existing_conversation_json:
@@ -56,9 +56,9 @@ async def service2(conversation_id: str, conversation: Conversation):
     else:
         existing_conversation = {"conversation": [{"role": "system", "content": "You are a helpful assistant."}]}
 
-    existing_conversation["conversation"].append(conversation.dict()["conversation"][-1])
+    existing_conversation["conversation"].append(conversation.model_dump()["conversation"][-1])
 
-    response = requests.post(f"http://service3:80/service3/{conversation_id}", json=existing_conversation)
+    response = requests.post(f"http://retrieval_service:80/retrieval_service/{conversation_id}", json=existing_conversation)
     response.raise_for_status()
     assistant_message = response.json()["reply"]
 
