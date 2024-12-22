@@ -1,0 +1,38 @@
+version: "3"
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  postgres:
+    build: ./postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  cache_service:
+    build: ./services/cache_service
+    ports:
+      - "5000:80"
+    depends_on:
+      - postgres
+
+  retrieval_service:
+    build: ./services/retrieval_service
+    ports:
+      - "8000:80"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+
+volumes:
+  redis_data:
+  postgres_data:
