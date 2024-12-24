@@ -39,10 +39,8 @@ docker compose up --build
 ```
 
 ### Resources
-- https://yes-we-can-devops.hashnode.dev/
-docker-entrypoint-initdbd
-- https://stackoverflow.com/questions/53481088/
-poppler-in-path-for-pdf2image
+- https://yes-we-can-devops.hashnode.dev/docker-entrypoint-initdbd
+- https://stackoverflow.com/questions/53481088/poppler-in-path-for-pdf2image
 - https://stackoverflow.com/questions/50951955/pytesseract-tesseractnotfound-error-tesseract-is-not-installed-or-its-not-i
 - Unstructured library tutorials: https://www.youtube.com/playlist?list=PLz-qytj7eIWXyYDZuFI89w8WE-pcwI06d
 - LangChain Crashcourse (2024): https://www.youtube.com/watch?v=-maRNgjEvLU
