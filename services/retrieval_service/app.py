@@ -1,5 +1,6 @@
 import os
 import logging
+from sys import stdout
 from typing import List
 from dotenv import find_dotenv, load_dotenv
 
@@ -22,6 +23,15 @@ from langchain_core.messages import (
 
 from insert_data import _create_collection
 
+logger = logging.getLogger()
+
+logger.setLevel(logging.INFO)
+logFormatter = logging.Formatter\
+("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
+consoleHandler = logging.StreamHandler(stdout)
+consoleHandler.setFormatter(logFormatter)
+logger.addHandler(consoleHandler)
+
 ROLE_CLASS_MAP = {
     "assistant": AIMessage,
     "user": HumanMessage,
@@ -29,12 +39,13 @@ ROLE_CLASS_MAP = {
 }
 
 load_dotenv(find_dotenv())
-openai.api_key = os.getenv("OPENAI_API_KEY")
-CONNECTION_STRING = "postgresql+psycopg2://admin:admin@postgres:5432/vectordb"
-COLLECTION_NAME="vectordb"
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+openai.api_key = os.getenv("OPENAI_API_KEY")
+user = os.getenv('POSTGRES_USER')
+password = os.getenv('POSTGRES_PASSWORD')
+dbname = os.getenv('POSTGRES_DB')
+CONNECTION_STRING = f"postgresql+psycopg2://{user}:{password}@postgres:5432/{dbname}"
+COLLECTION_NAME="vectordb"
 
 class Message(BaseModel):
     role: str
@@ -50,9 +61,14 @@ store = PGVector(
     connection=CONNECTION_STRING,
     embeddings=embeddings,
 )
-retriever = store.as_retriever()
+retriever = store.as_retriever(
+    search_kwargs={
+        # "score_threshold": 0.5,
+        "k": 3
+    }
+)
 
-prompt_template = """As a FAQ Bot for the Llama 3 Technical Report, you have been given the following information:
+prompt_template = """As a FAQ Bot for the Llama 3 Technical & GPT4All Report, you have been given the following information:
 
 {context}
 
@@ -99,7 +115,7 @@ async def retrieval_service(conversation_id: str, conversation: Conversation):
 
     query = conversation.conversation[-1].content
 
-    docs = retriever.similarity_search(query=query, k=3)
+    docs = retriever.invoke(query)
     docs = format_docs(docs=docs)
 
     prompt = system_message_prompt.format(context=docs)
